@@ -29,20 +29,21 @@ terraform/
 - **Internet Gateway** attached to the VPC.
 - **Public subnets** in `ap-south-1a` and `ap-south-1b` with auto-assign public IP enabled (for NAT gateways and future ALB).
 - **Private subnets** in `ap-south-1a` and `ap-south-1b` for EC2 and RDS.
-- **NAT Gateway**: one Elastic IP and one NAT gateway in the first public subnet for the POC.
+- **NAT Gateway**: disabled by default in `terraform.tfvars` (`enable_nat_gateway = false`) for the public-EC2 POC. Set to `true` and `single_nat_gateway = false` for production.
 - **Route tables**:
   - Public route table sends `0.0.0.0/0` to the Internet Gateway.
-  - Private route table sends `0.0.0.0/0` to the NAT gateway.
+  - Private route table sends `0.0.0.0/0` to the NAT gateway when NAT is enabled; otherwise it contains only the local VPC route.
 - **Security groups**:
   - `mcloud-poc-alb-sg`: allows 80/443 from the internet.
-  - `mcloud-poc-windows-sg`: allows 80/443 from the ALB SG, optionally 80/443 + 3389 from `admin_cidr_blocks`, and optionally 9040 from `device_cidr_blocks`.
+  - `mcloud-poc-windows-sg`: allows 80/443 from the ALB SG, optionally 80/443 from `windows_web_cidr_blocks` (use this for direct public EC2 access), optionally 80/443 + 3389 from `admin_cidr_blocks`, and optionally 9040 from `device_cidr_blocks`.
   - `mcloud-poc-rds-sg`: allows 1433 from the Windows EC2 security group only.
 
 ## How to use
 
 1. Install Terraform and authenticate to AWS (environment variables or `~/.aws/credentials`).
 2. Update `terraform.tfvars`:
-   - Change `admin_cidr_blocks` to your public IP if you want direct RDP or HTTP/HTTPS access to the EC2.
+   - Change `admin_cidr_blocks` to your public IP if you want direct RDP (and optional HTTP/HTTPS) access to the EC2.
+   - Change `windows_web_cidr_blocks` to `["0.0.0.0/0"]` for public HTTP/HTTPS access when no ALB is used, or set to your IP for restricted access.
    - Change `device_cidr_blocks` if you test legacy devices on port 9040.
 3. Run:
 
@@ -71,9 +72,32 @@ azs                  = ["ap-south-1a", "ap-south-1b"]
 public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
 private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
 
-enable_nat_gateway = true
+enable_nat_gateway = false
 single_nat_gateway = true
+
+admin_cidr_blocks       = []
+windows_web_cidr_blocks = ["0.0.0.0/0"]
+device_cidr_blocks      = []
 ```
+
+## Public EC2 / no ALB mode
+
+The default `terraform.tfvars` is configured for a POC where the Windows EC2 has a public IP and no Application Load Balancer is used. In this mode:
+
+- `enable_nat_gateway = false` — no NAT gateway is created because the EC2 is in a public subnet and uses the Internet Gateway directly.
+- `windows_web_cidr_blocks = ["0.0.0.0/0"]` — HTTP/HTTPS is opened directly to the EC2.
+- The RDS SQL Server stays in a private subnet with no outbound internet. The EC2 in the public subnet can still reach RDS over the internal VPC network.
+
+When you move to production, switch to an ALB and private EC2 by setting:
+
+```hcl
+enable_nat_gateway      = true
+single_nat_gateway      = false
+windows_web_cidr_blocks = []
+admin_cidr_blocks       = []
+```
+
+Then place the EC2 in the private subnets and create an Application Load Balancer in the public subnets using `alb_security_group_id`.
 
 ## What to change for production
 
@@ -100,10 +124,11 @@ terraform {
 In `terraform.tfvars`:
 
 ```hcl
-environment        = "prod"
-single_nat_gateway = false
-admin_cidr_blocks  = []
-device_cidr_blocks = []
+environment             = "prod"
+single_nat_gateway      = false
+admin_cidr_blocks       = []
+windows_web_cidr_blocks = []
+device_cidr_blocks      = []
 ```
 
 - `single_nat_gateway = false` creates one NAT gateway per AZ for high availability.
@@ -113,7 +138,7 @@ device_cidr_blocks = []
 ### 3. Security groups
 
 - Restrict the **ALB security group** to known office, VPN, or WAF IPs. Consider adding AWS WAF in front of the ALB.
-- Remove direct `admin_cidr_blocks` access from the **Windows EC2 security group** so it accepts traffic only from the ALB SG.
+- Remove direct `admin_cidr_blocks` and `windows_web_cidr_blocks` access from the **Windows EC2 security group** so it accepts traffic only from the ALB SG.
 - Add VPC Flow Logs, AWS Network Firewall, or AWS Shield Advanced as required.
 
 ### 4. Subnet placement
@@ -156,6 +181,6 @@ After `terraform apply`, the following outputs are available:
 
 ## Cost notes for the POC
 
-- One NAT gateway adds ~$33/month plus data processing charges. It is enabled because it is production-like, but you can set `enable_nat_gateway = false` if the EC2 is in the public subnet and you do not need private subnet outbound access.
-- One NAT gateway is created instead of one per AZ to save cost.
-- Public subnets are used so the POC EC2 can have a public IP and Elastic IP without a bastion or ALB.
+- `enable_nat_gateway = false` in the default `terraform.tfvars` saves ~$33/month because the public EC2 does not need a NAT gateway.
+- When you move to production, set `enable_nat_gateway = true` and `single_nat_gateway = false` to create one NAT gateway per AZ for high availability.
+- `windows_web_cidr_blocks = ["0.0.0.0/0"]` opens HTTP/HTTPS directly to the EC2 because no ALB is used. For production, use an ALB and set `windows_web_cidr_blocks = []`.

@@ -70,10 +70,11 @@ module "routing" {
 module "security_groups" {
   source = "./modules/security_groups"
 
-  vpc_id             = module.vpc.vpc_id
-  project            = var.project
-  environment        = var.environment
-  admin_cidr_blocks  = var.admin_cidr_blocks
-  device_cidr_blocks = var.device_cidr_blocks
-  tags               = local.common_tags
+  vpc_id                  = module.vpc.vpc_id
+  project                 = var.project
+  environment             = var.environment
+  admin_cidr_blocks       = var.admin_cidr_blocks
+  device_cidr_blocks      = var.device_cidr_blocks
+  windows_web_cidr_blocks = var.windows_web_cidr_blocks
+  tags                    = local.common_tags
 }

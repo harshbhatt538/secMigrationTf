@@ -53,7 +53,7 @@ variable "single_nat_gateway" {
 }
 
 variable "admin_cidr_blocks" {
-  description = "Trusted CIDR blocks allowed to reach the Windows EC2 on RDP (3389), HTTP (80) and HTTPS (443). Leave empty if you only use AWS Systems Manager Session Manager."
+  description = "Trusted CIDR blocks allowed to reach the Windows EC2 on RDP (3389) and optionally direct HTTP/HTTPS for POC. Use windows_web_cidr_blocks for public web access. Leave empty if you only use AWS Systems Manager Session Manager."
   type        = list(string)
   default     = []
 }
@@ -68,4 +68,10 @@ variable "tags" {
   description = "Additional tags to apply to all resources"
   type        = map(string)
   default     = {}
+}
+
+variable "windows_web_cidr_blocks" {
+  description = "CIDR blocks allowed to reach the Windows EC2 on HTTP/HTTPS. Use 0.0.0.0/0 only for POC."
+  type        = list(string)
+  default     = []
 }

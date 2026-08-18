@@ -54,6 +54,17 @@ resource "aws_security_group" "windows" {
   }
 
   dynamic "ingress" {
+    for_each = length(var.windows_web_cidr_blocks) > 0 ? ["80", "443"] : []
+    content {
+      description = "TCP ${ingress.value} from public web CIDRs"
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = var.windows_web_cidr_blocks
+    }
+  }
+
+  dynamic "ingress" {
     for_each = length(var.admin_cidr_blocks) > 0 ? ["80", "443"] : []
     content {
       description = "TCP ${ingress.value} from admin CIDRs for POC access"
