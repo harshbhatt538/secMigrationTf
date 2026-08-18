@@ -75,3 +75,39 @@ variable "windows_web_cidr_blocks" {
   type        = list(string)
   default     = []
 }
+
+variable "ec2_instance_type" {
+  description = "EC2 instance type for the Windows application server. t3.medium is the recommended POC minimum."
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "ec2_ami_id" {
+  description = "Optional AMI ID. Leave empty to use the latest Windows Server 2022 Base AMI."
+  type        = string
+  default     = ""
+}
+
+variable "ec2_key_name" {
+  description = "Optional EC2 key pair name for RDP access. Leave empty to use AWS Systems Manager Session Manager only."
+  type        = string
+  default     = ""
+}
+
+variable "ec2_root_volume_size" {
+  description = "Root EBS volume size in GB"
+  type        = number
+  default     = 50
+}
+
+variable "ec2_data_volume_size" {
+  description = "Optional data EBS volume size in GB for C:\\MA\\Storage and logs. Set to 0 to disable."
+  type        = number
+  default     = 0
+}
+
+variable "ec2_create_eip" {
+  description = "If true, create and attach an Elastic IP to the EC2 instance"
+  type        = bool
+  default     = false
+}

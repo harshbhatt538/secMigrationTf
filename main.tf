@@ -78,3 +78,19 @@ module "security_groups" {
   windows_web_cidr_blocks = var.windows_web_cidr_blocks
   tags                    = local.common_tags
 }
+
+module "ec2" {
+  source = "./modules/ec2"
+
+  project           = var.project
+  environment       = var.environment
+  instance_type     = var.ec2_instance_type
+  ami_id            = var.ec2_ami_id
+  key_name          = var.ec2_key_name
+  subnet_id         = module.subnets.public_subnet_ids[0]
+  security_group_id = module.security_groups.windows_security_group_id
+  root_volume_size  = var.ec2_root_volume_size
+  data_volume_size  = var.ec2_data_volume_size
+  create_eip        = var.ec2_create_eip
+  tags              = local.common_tags
+}

@@ -9,7 +9,8 @@
 crash.log
 crash.*.log
 
-# Terraform plan output
+# Terraform plan output (including the default 'tfplan' file name)
+tfplan
 *.tfplan
 *.plan
 
