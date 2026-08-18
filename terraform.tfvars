@@ -26,7 +26,9 @@ device_cidr_blocks = []
 windows_web_cidr_blocks = ["0.0.0.0/0"]
 
 # Windows application server
-ec2_instance_type    = "t3.medium"
+# t3.small is the smallest Free Tier-eligible Windows-capable instance type in ap-south-1.
+# For production or larger device counts, use t3.medium or bigger.
+ec2_instance_type    = "t3.small"
 ec2_key_name         = ""
 ec2_root_volume_size = 50
 ec2_data_volume_size = 0
