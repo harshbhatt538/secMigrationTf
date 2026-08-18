@@ -123,6 +123,14 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.windows.id]
   }
 
+  ingress {
+    description     = "MSDTC from application server"
+    from_port       = 5000
+    to_port         = 5000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.windows.id]
+  }
+
   egress {
     description = "Allow all outbound"
     from_port   = 0

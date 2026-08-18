@@ -72,3 +72,29 @@ output "ec2_iam_role_name" {
   description = "IAM role name attached to the Windows EC2 instance"
   value       = module.ec2.iam_role_name
 }
+
+output "rds_endpoint" {
+  description = "RDS SQL Server endpoint (hostname:port)"
+  value       = module.rds.endpoint
+}
+
+output "rds_address" {
+  description = "RDS SQL Server hostname"
+  value       = module.rds.address
+}
+
+output "rds_port" {
+  description = "RDS SQL Server port"
+  value       = module.rds.port
+}
+
+output "rds_master_username" {
+  description = "RDS SQL Server master username"
+  value       = module.rds.master_username
+}
+
+output "rds_master_password" {
+  description = "RDS SQL Server master password"
+  value       = module.rds.master_password
+  sensitive   = true
+}

@@ -111,3 +111,28 @@ variable "ec2_create_eip" {
   type        = bool
   default     = false
 }
+
+variable "rds_instance_class" {
+  description = "RDS instance class for SQL Server Express 2022"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "rds_allocated_storage" {
+  description = "Allocated storage in GB for the RDS SQL Server instance"
+  type        = number
+  default     = 20
+}
+
+variable "rds_master_username" {
+  description = "Master username for the RDS SQL Server instance"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "Master password for the RDS SQL Server instance. Leave empty to generate a random password."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

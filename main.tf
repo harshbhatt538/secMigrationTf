@@ -94,3 +94,17 @@ module "ec2" {
   create_eip        = var.ec2_create_eip
   tags              = local.common_tags
 }
+
+module "rds" {
+  source = "./modules/rds"
+
+  project           = var.project
+  environment       = var.environment
+  subnet_ids        = module.subnets.private_subnet_ids
+  security_group_id = module.security_groups.rds_security_group_id
+  instance_class    = var.rds_instance_class
+  allocated_storage = var.rds_allocated_storage
+  master_username   = var.rds_master_username
+  master_password   = var.rds_master_password
+  tags              = local.common_tags
+}

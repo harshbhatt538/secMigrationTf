@@ -33,3 +33,9 @@ ec2_key_name         = ""
 ec2_root_volume_size = 50
 ec2_data_volume_size = 0
 ec2_create_eip       = false
+
+# RDS SQL Server 2022 Express with MSDTC
+rds_instance_class    = "db.t3.micro"
+rds_allocated_storage = 20
+rds_master_username   = "admin"
+rds_master_password   = ""
