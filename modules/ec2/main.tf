@@ -23,6 +23,9 @@ resource "aws_instance" "main" {
     data_volume_drive = var.data_volume_size > 0 ? "D" : ""
   })
 
+  # Replace the EC2 if the bootstrap script changes so you can iterate the POC quickly.
+  user_data_replace_on_change = true
+
   tags = merge(var.tags, {
     Name = "${var.project}-${var.environment}-windows"
   })
