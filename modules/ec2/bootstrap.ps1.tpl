@@ -144,20 +144,36 @@ if (Get-Command aws -ErrorAction SilentlyContinue) {
   if ($p.ExitCode -eq 0) { Write-Ok "AWS CLI v2" } else { Write-Fail "AWS CLI v2 (exit $($p.ExitCode))" }
 }
 
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # 9. CloudWatch Agent
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 Write-Step "CloudWatch Agent"
+
 if (Get-Service -Name "AmazonCloudWatchAgent" -ErrorAction SilentlyContinue) {
   Write-Skip "CloudWatch Agent"
 } else {
-  Invoke-WebRequest -Uri https://s3.amazonaws.com/amazoncloudwatch-agent/windows/amd64/latest/AmazonCloudWatchAgent.zip -OutFile C:\AmazonCloudWatchAgent.zip
-  Expand-Archive -Path C:\AmazonCloudWatchAgent.zip -DestinationPath C:\AmazonCloudWatchAgent -Force
-  C:\AmazonCloudWatchAgent\install.ps1 -Quiet
-  if (Get-Service -Name "AmazonCloudWatchAgent" -ErrorAction SilentlyContinue) {
-    Write-Ok "CloudWatch Agent"
+  $cwMsi = "C:\amazon-cloudwatch-agent.msi"
+
+  Invoke-WebRequest `
+    -Uri "https://amazoncloudwatch-agent.s3.amazonaws.com/windows/amd64/latest/amazon-cloudwatch-agent.msi" `
+    -OutFile $cwMsi
+
+  if (Test-Path $cwMsi) {
+    Write-Host "CloudWatch Agent MSI downloaded successfully"
+
+    $p = Start-Process `
+      -FilePath "msiexec.exe" `
+      -ArgumentList "/i `"$cwMsi`" /qn /norestart" `
+      -Wait `
+      -PassThru
+
+    if ($p.ExitCode -eq 0) {
+      Write-Ok "CloudWatch Agent"
+    } else {
+      Write-Fail "CloudWatch Agent (exit $($p.ExitCode))"
+    }
   } else {
-    Write-Fail "CloudWatch Agent"
+    Write-Fail "CloudWatch Agent download failed"
   }
 }
 
