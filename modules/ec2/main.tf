@@ -19,9 +19,7 @@ resource "aws_instance" "main" {
     })
   }
 
-  user_data = templatefile("${path.module}/bootstrap.ps1.tpl", {
-    data_volume_drive = var.data_volume_size > 0 ? "D" : ""
-  })
+  user_data = "<powershell>${templatefile("${path.module}/bootstrap.ps1.tpl", { data_volume_drive = var.data_volume_size > 0 ? "D" : "" })}</powershell>"
 
   # Replace the EC2 if the bootstrap script changes so you can iterate the POC quickly.
   user_data_replace_on_change = true
